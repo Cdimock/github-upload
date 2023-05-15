@@ -48,5 +48,4 @@ jobs:
             This pull request was automatically generated to bump the patch version of the app to ${{ steps.increment_version.outputs.version }}.
           commit-message: Bump version to ${{ steps.increment_version.outputs.version }}
           labels: version
-          reviewers: release-team
           base: master
