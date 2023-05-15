@@ -41,12 +41,17 @@ jobs:
         run: |
           npm version patch --force --no-git-tag-version
           echo ::set-output name=version::$(node -p "require('./package.json').version")
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: master
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          branch: master
           title: Bump version to ${{ steps.increment_version.outputs.version }}
           body: |
             This pull request was automatically generated to bump the patch version of the app to ${{ steps.increment_version.outputs.version }}.
