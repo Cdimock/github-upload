@@ -1,0 +1,55 @@
+name: Bump Version Number
+
+on:
+  release:
+    types: [published]
+
+env:
+  GITHUB_USER: truebill-ci
+  GITHUB_EMAIL: ci@truebill.com
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Determine node version
+        id: node_version
+        run: echo ::set-output name=version::$(node -p "require('./package.json').engines.node")
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ steps.node_version.outputs.version }}
+
+      - name: Get current version number
+        id: get_current_version
+        run: echo ::set-output name=version::$(node -p "require('./package.json').version")
+
+      - name: Increment patch version
+        id: increment_version
+        run: |
+          npm version patch --force --no-git-tag-version
+          echo ::set-output name=version::$(node -p "require('./package.json').version")
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
+          title: Bump version to ${{ steps.increment_version.outputs.version }}
+          body: |
+            This pull request was automatically generated to bump the patch version of the app to ${{ steps.increment_version.outputs.version }}.
+          commit-message: Bump version to ${{ steps.increment_version.outputs.version }}
+          labels: version
+          reviewers: release-team
