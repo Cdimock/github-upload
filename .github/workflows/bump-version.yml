@@ -29,9 +29,11 @@ jobs:
         with:
           node-version: ${{ steps.node_version.outputs.version }}
 
-      - name: Get current version number
-        id: get_current_version
-        run: echo ::set-output name=version::$(node -p "require('./package.json').version")
+      - name: Set current version number
+        id: set_current_version
+        run: |
+          npm version ${{ github.event.release.name }} --force --no-git-tag-version
+          echo ::set-output name=version::$(node -p "require('./package.json').version")
 
       - name: Increment patch version
         id: increment_version
