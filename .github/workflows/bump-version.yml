@@ -20,16 +20,19 @@ jobs:
           fetch-depth: 0
           ref: master
 
-      - name: Determine node version
-        id: node_version
-        run: echo ::set-output name=version::$(node -p "require('./package.json').engines.node")
+      - name: Determine versions
+        id: version
+        run: |
+          echo ::set-output name=node::$(node -p "require('./package.json').engines.node")
+          echo ::set-output name=app_version::$(node -p "require('./package.json').version")
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: ${{ steps.node_version.outputs.version }}
+          node-version: ${{ steps.version.outputs.node }}
 
       - name: Set current version number
+        if: steps.version.outputs.app_version != github.event.release.name
         id: set_current_version
         run: |
           npm version ${{ github.event.release.name }} --force --no-git-tag-version
